@@ -6,6 +6,13 @@ using System.Net.Http.Json;
 using Spring.Http;
 using System.Threading.Tasks;
 using Models;
+using Newtonsoft.Json.Linq;
+using System.Text;
+using Newtonsoft.Json;
+using System.Net.Http.Headers;
+using System.IO;
+using static System.Net.Mime.MediaTypeNames;
+using System.Diagnostics;
 
 namespace Client.Pages
 {
@@ -23,7 +30,7 @@ namespace Client.Pages
 
             if(JsonToken != null)
             {
-                postRequest();
+                await postRequest(JsonToken);
             }
             else
             {
@@ -41,10 +48,6 @@ namespace Client.Pages
                 postBody.Add("grant_type", "client_credentials");
                 postBody.Add("scope", "identify");
 
-            string jsonBody = "client_id = tb84f0e18858f4f6aa46da3976a57c242," +
-                " client_secret = 3uYMKsO7S3cihbZrJBrKNTJyJ0PqOmXaUWHon9odPy09hwFMMim4tpTjSCWVCgEF," +
-                " grant_type = client_credentials, scope = identify";
-
             // converts to HttpContent
             HttpContent reqContent = new FormUrlEncodedContent(postBody);
             reqContent.Headers.Clear();
@@ -58,21 +61,59 @@ namespace Client.Pages
             JsonToken = tokenInfo.access_token;
 
         }
-        private async Task postRequest()
+        private async Task postRequest(string token)
         {
 
-            jsonBody = "{'flow': 'redirect','allowedProviders': ['no_bankid_netcentric','no_bankid_mobile'],'include': ['name','date_of_birth'],'redirectSettings': {'successUrl': 'https://developer.signicat.io/landing-pages/identification-success.html','abortUrl': 'https://developer.signicat.io/landing-pages/something-wrong.html','errorUrl': 'https://developer.signicat.io/landing-pages/something-wrong.html'}}";
 
-            content = new StringContent(jsonBody);
+            jsonBody = "{flow: redirect, allowedProviders: [no_bankid_netcentric, no_bankid_mobile], include: [name, date_of_birth], redirectSettings: {successUrl: https://developer.signicat.io/landing-pages/identification-success.html, abortUrl: https://developer.signicat.io/landing-pages/something-wrong.html, errorUrl: https://developer.signicat.io/landing-pages/something-wrong.html}}";
 
-            client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", JsonToken);
+
+            List<string> provider = new List<string>();
+            string v1 = "no_bankid_netcentric";
+            string v2 = "no_bankid_mobile";
+            provider.Add(v1);
+            provider.Add(v2);
+
+            List<string> include = new List<string>();
+            string n1 = "name";
+            string n2 = "date_of_birth";
+            include.Add(n1);
+            include.Add(n2);
+
+            var redirectSettings = new RedirectSettings( 
+                successUrl: "https://developer.signicat.io/landing-pages/identification-success.html",
+                abortUrl: "https://developer.signicat.io/landing-pages/something-wrong.html",
+                errorUrl: "https://developer.signicat.io/landing-pages/something-wrong.html"
+                );
+
+            var json = new BodyInfo(
+                flow: "redirect",
+                allowedProviders: provider,
+                include: include,
+                redirectSettings: redirectSettings
+                );
+
+            
+            client.DefaultRequestHeaders.Clear();
+            client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+            client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));//ACCEPT header
+
+
+            var jsonString = JsonConvert.SerializeObject(json);
+            Console.WriteLine(jsonString);
+
+            content = new StringContent(jsonString, Encoding.UTF8, "application/json");
 
             try
             {
                 var response = await client.PostAsync("https://api.idfy.io/identification/v2/sessions", content);
 
-                responseTxt = response.Content.ReadAsStringAsync().ToString();
-                Console.WriteLine(responseTxt);
+                SessionInfo sessionInfo = await response.Content.ReadAsAsync<SessionInfo>();
+                Console.WriteLine(sessionInfo.url);
+                Console.WriteLine("Url");
+                string url = sessionInfo.url;
+                Process.Start(url);
+                
 
             }
             catch (Exception e)

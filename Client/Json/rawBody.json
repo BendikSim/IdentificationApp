@@ -1,0 +1,16 @@
+{
+  "flow": "redirect",
+  "allowedProviders": [
+    "no_bankid_netcentric",
+    "no_bankid_mobile"
+  ],
+  "include": [
+    "name",
+    "date_of_birth"
+  ],
+  "redirectSettings": {
+    "successUrl": "https://developer.signicat.io/landing-pages/identification-success.html",
+    "abortUrl": "https://developer.signicat.io/landing-pages/something-wrong.html",
+    "errorUrl": "https://developer.signicat.io/landing-pages/something-wrong.html"
+  }
+}
