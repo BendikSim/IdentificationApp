@@ -1,11 +1,12 @@
-﻿<h3>Homepage</h3>
+﻿@page
+<h3>Homepage</h3>
 
 <p>@responseTxt</p>
 
-<button @onclick="postRequest"></button>
+<button @onclick="@Authentication">Authenticate</button>
+<button @onclick="@postRequest"></button>
 
-@code {
-    @using System.Net.Http
-    @inject HttpClient client
+@using System.Net.Http
+@inject HttpClient client
 
-}
+

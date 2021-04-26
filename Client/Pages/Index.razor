@@ -1,0 +1,10 @@
+﻿@page "/"
+
+<h1>Hello, world!</h1>
+
+Welcome to your new app.
+
+<button class="btn btn-primary" @onclick="@Authentication">Test the API</button>
+
+@using System.Net.Http
+@inject HttpClient client

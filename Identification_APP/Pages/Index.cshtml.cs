@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Identification_APP.Models;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Logging;
 using System;
@@ -18,6 +19,35 @@ namespace Identification_APP.Pages
         public IndexModel(ILogger<IndexModel> logger)
         {
             _logger = logger;
+        }
+        public string Authentication()
+        {
+            string token = "";
+            // the post body
+            string jsonBody = "client_id = tb84f0e18858f4f6aa46da3976a57c242," +
+                " client_secret = 3uYMKsO7S3cihbZrJBrKNTJyJ0PqOmXaUWHon9odPy09hwFMMim4tpTjSCWVCgEF," +
+                " grant_type = client_credentials, scope = identify";
+
+            // converts to HttpContent
+            HttpContent resContent = new StringContent(jsonBody);
+
+            Info info = new Info(
+                  "tb84f0e18858f4f6aa46da3976a57c242",
+                  "3uYMKsO7S3cihbZrJBrKNTJyJ0PqOmXaUWHon9odPy09hwFMMim4tpTjSCWVCgEF",
+                  "client_credentials",
+                  "identify"
+                );
+
+
+            // sends a PostAsync request to the api
+            HttpClient client = new HttpClient();
+
+            var response = client.PostAsync("https://api.idfy.io/oauth/connect/token", resContent);
+            string responseTxt = response.Result.Content.ReadAsStringAsync().ToString();
+            Console.WriteLine(response);
+
+            return token;
+
         }
 
         public async Task OnGet()

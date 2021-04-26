@@ -8,18 +8,18 @@ namespace Identification_APP.Models
 {
     public class Info
     {
-        public string flow { get; set; }
-        public string[] allowedProviders { get; set; }
+        public string client_id { get; set; }
+        public string client_secret { get; set; }
 
-        public List<string> include { get; set; }
-        public string redirectSettings { get; set; }
+        public string grant_type { get; set; }
+        public string scope { get; set; }
 
-        public Info(string flow, List<string> include, string[] allowedProviders, string redirectSettings)
+        public Info(string client_id, string client_secret, string grant_type, string scope)
         {
-            this.flow = flow;
-            this.include = include;
-            this.allowedProviders = allowedProviders;
-            this.redirectSettings = redirectSettings;
+            this.client_id = client_id;
+            this.client_secret = client_secret;
+            this.grant_type = grant_type;
+            this.scope = scope;
         }
     }
 }

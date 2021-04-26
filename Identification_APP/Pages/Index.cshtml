@@ -9,5 +9,5 @@
     <p>Learn about <a href="https://docs.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
 </div>
 <form method="post">
-    <button type="submit" class="btn btn-primary" onclick="location.href='@Url.Action("OnGet")">Test the API</button>
+    <button type="submit" class="btn btn-primary" @onclick="@Authentication">Test the API</button>
 </form>
