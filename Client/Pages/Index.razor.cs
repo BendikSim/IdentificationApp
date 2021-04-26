@@ -3,7 +3,9 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Net.Http.Json;
+using Spring.Http;
 using System.Threading.Tasks;
+using Models;
 
 namespace Client.Pages
 {
@@ -14,6 +16,21 @@ namespace Client.Pages
         private string responseTxt;
         private HttpContent content;
         private string JsonToken;
+        private TokenInfo token;
+        private async Task Start()
+        {
+            Authentication();
+
+            if(JsonToken != null)
+            {
+                postRequest();
+            }
+            else
+            {
+                Console.WriteLine("You need a access token");
+            }
+
+        }
 
         private async Task Authentication()
         {
@@ -34,12 +51,11 @@ namespace Client.Pages
             reqContent.Headers.Add("Content-Type", "application/x-www-form-urlencoded");
 
             // sends a PostAsync request to the api
-            var response = client.PostAsync("https://api.idfy.io/oauth/connect/token", reqContent);
-            string responseTxt = response.ToString();
-            Console.WriteLine(responseTxt);
-            string token = "";
+            var response = await client.PostAsync("https://api.idfy.io/oauth/connect/token", reqContent);
+            TokenInfo tokenInfo = await response.Content.ReadAsAsync<TokenInfo>();
+            Console.WriteLine(tokenInfo.access_token);
 
-            JsonToken = token;
+            JsonToken = tokenInfo.access_token;
 
         }
         private async Task postRequest()
@@ -49,7 +65,7 @@ namespace Client.Pages
 
             content = new StringContent(jsonBody);
 
-
+            client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", JsonToken);
 
             try
             {
