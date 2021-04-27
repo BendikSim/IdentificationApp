@@ -1,18 +1,11 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Net.Http;
-using System.Net.Http.Json;
-using Spring.Http;
 using System.Threading.Tasks;
 using Models;
-using Newtonsoft.Json.Linq;
 using System.Text;
 using Newtonsoft.Json;
 using System.Net.Http.Headers;
-using System.IO;
-using static System.Net.Mime.MediaTypeNames;
-using System.Diagnostics;
 
 namespace Client.Pages
 {
@@ -110,11 +103,8 @@ namespace Client.Pages
 
                 SessionInfo sessionInfo = await response.Content.ReadAsAsync<SessionInfo>();
                 Console.WriteLine(sessionInfo.url);
-                Console.WriteLine("Url");
                 string url = sessionInfo.url;
-                Process.Start(url);
-                
-
+                NavManager.NavigateTo(url);
             }
             catch (Exception e)
             {
