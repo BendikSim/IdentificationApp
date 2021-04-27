@@ -19,14 +19,15 @@ namespace Client.Pages
         private string sessionId;
         private string name;
         private string birthDate;
+        private int timer;
 
         private async Task Start()
         {
+            if(accessToken == null) { 
             await Authentication();
+            }
 
-            if(accessToken != null)
-            {
-                await postRequest(accessToken);
+            await postRequest(accessToken);
 
                 while(sessionId == null)
                 {
@@ -41,11 +42,6 @@ namespace Client.Pages
                 {
                     Console.WriteLine("You need to login with bankid first");
                 }
-            }
-            else
-            {
-                Console.WriteLine("You need an access-token");
-            }
 
         }
 
@@ -69,6 +65,7 @@ namespace Client.Pages
 
             //saves the token to a variable
             accessToken = token.access_token;
+            timer = token.expires_in;
 
         }
         private async Task postRequest(string token)
