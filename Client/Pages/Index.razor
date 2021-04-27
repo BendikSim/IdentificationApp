@@ -3,16 +3,23 @@
 <h1>Hello</h1>
 
 <p>Welcome IdentificationApp</p>
+<p>First click Start API to get sent to bankid login.</p>
+<p>Login successful? Click Get Session to retrive info</p>
 
 <button class="btn btn-primary" @onclick="@Start">Start API</button>
 
-<button class="btn btn-primary" @onclick="@getRequest">get</button>
-<p>Identification data</p>
-<p>@name</p>
-<p>@birthDate</p>
+<button class="btn btn-primary" @onclick="@getRequest">Get Session</button>
+
+@if (name != null)
+{
+    <p>Identification data:</p>
+    <p>Name: @name</p>
+    <p>BirthDate: @birthDate</p>
+}
+
+
 
 
 @using System.Net.Http
 @inject HttpClient client
-@inject NavigationManager NavManager
 @inject IJSRuntime JSRuntime;

@@ -23,25 +23,33 @@ namespace Client.Pages
 
         private async Task Start()
         {
+            // makes a accessToken if it doesn't exist 
             if(accessToken == null) { 
             await Authentication();
-            }
-
+            
+            // runs postrequest to retrive and open the bankid api
             await postRequest(accessToken);
-
-                while(sessionId == null)
+                
+                if (sessionId != null)
                 {
-                    Console.WriteLine("Login to get id");
+                    await getRequest();
                 }
+            }
+            else
+            {
+                await postRequest(accessToken);
 
                 if (sessionId != null)
                 {
                     await getRequest();
                 }
-                else
-                {
-                    Console.WriteLine("You need to login with bankid first");
-                }
+            }
+
+
+            
+            
+
+            
 
         }
 
