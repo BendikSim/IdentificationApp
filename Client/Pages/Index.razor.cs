@@ -6,28 +6,45 @@ using Models;
 using System.Text;
 using Newtonsoft.Json;
 using System.Net.Http.Headers;
+using Microsoft.JSInterop;
 
 namespace Client.Pages
 {
 
     public partial class Index
     {
-        private string jsonBody;
-        private string responseTxt;
         private HttpContent content;
-        private string JsonToken;
+        private string accessToken;
         private TokenInfo token;
+        private string sessionId;
+        private string name;
+        private string birthDate;
+
         private async Task Start()
         {
-            Authentication();
+            await Authentication();
 
-            if(JsonToken != null)
+            if(accessToken != null)
             {
-                await postRequest(JsonToken);
+                await postRequest(accessToken);
+
+                while(sessionId == null)
+                {
+                    Console.WriteLine("Login to get id");
+                }
+
+                if (sessionId != null)
+                {
+                    await getRequest();
+                }
+                else
+                {
+                    Console.WriteLine("You need to login with bankid first");
+                }
             }
             else
             {
-                Console.WriteLine("You need a access token");
+                Console.WriteLine("You need an access-token");
             }
 
         }
@@ -48,37 +65,37 @@ namespace Client.Pages
 
             // sends a PostAsync request to the api
             var response = await client.PostAsync("https://api.idfy.io/oauth/connect/token", reqContent);
-            TokenInfo tokenInfo = await response.Content.ReadAsAsync<TokenInfo>();
-            Console.WriteLine(tokenInfo.access_token);
+            token = await response.Content.ReadAsAsync<TokenInfo>();
 
-            JsonToken = tokenInfo.access_token;
+            //saves the token to a variable
+            accessToken = token.access_token;
 
         }
         private async Task postRequest(string token)
         {
-
-
-            jsonBody = "{flow: redirect, allowedProviders: [no_bankid_netcentric, no_bankid_mobile], include: [name, date_of_birth], redirectSettings: {successUrl: https://developer.signicat.io/landing-pages/identification-success.html, abortUrl: https://developer.signicat.io/landing-pages/something-wrong.html, errorUrl: https://developer.signicat.io/landing-pages/something-wrong.html}}";
-
-
+            // parameters to send into post request
+            // a list of providers
             List<string> provider = new List<string>();
             string v1 = "no_bankid_netcentric";
             string v2 = "no_bankid_mobile";
             provider.Add(v1);
             provider.Add(v2);
 
+            // a list of include
             List<string> include = new List<string>();
             string n1 = "name";
             string n2 = "date_of_birth";
             include.Add(n1);
             include.Add(n2);
 
+            // redirectsettings urls
             var redirectSettings = new RedirectSettings( 
                 successUrl: "https://developer.signicat.io/landing-pages/identification-success.html",
                 abortUrl: "https://developer.signicat.io/landing-pages/something-wrong.html",
                 errorUrl: "https://developer.signicat.io/landing-pages/something-wrong.html"
                 );
 
+            // the complete jsonbody
             var json = new BodyInfo(
                 flow: "redirect",
                 allowedProviders: provider,
@@ -86,30 +103,49 @@ namespace Client.Pages
                 redirectSettings: redirectSettings
                 );
 
-            
+            // sets the token as authorization header sets mediatype
             client.DefaultRequestHeaders.Clear();
-            client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
             client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));//ACCEPT header
 
-
+            // converts the jsonBody into a string
             var jsonString = JsonConvert.SerializeObject(json);
-            Console.WriteLine(jsonString);
 
+            // Converts the string into a httpcontent
             content = new StringContent(jsonString, Encoding.UTF8, "application/json");
 
             try
             {
+                // sends a post request to the api with a content
                 var response = await client.PostAsync("https://api.idfy.io/identification/v2/sessions", content);
 
-                SessionInfo sessionInfo = await response.Content.ReadAsAsync<SessionInfo>();
-                Console.WriteLine(sessionInfo.url);
+                // filters out the url of the response
+                var sessionInfo = await response.Content.ReadAsAsync<SessionInfo>();
                 string url = sessionInfo.url;
-                NavManager.NavigateTo(url);
+                sessionId = sessionInfo.id;
+
+                // redirects to the bankidlogin
+                //NavManager.NavigateTo(url);
+                await JSRuntime.InvokeAsync<object>("open", url, "_blank");
             }
             catch (Exception e)
             {
                 Console.WriteLine(e.Message);
             }
+            
+        }
+        private async Task getRequest()
+        {
+            client.DefaultRequestHeaders.Clear();
+
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
+
+            //var response = await client.GetAsync("https://developer.signicat.com/express/#operation/identification/v2/RetrieveSession/" + sessionId);
+            var response = await client.GetAsync("https://api.idfy.io/identification/v2/sessions/" + sessionId);
+
+            var responseInfo = await response.Content.ReadAsAsync<SessionInfo>();
+            name = responseInfo.identity.firstName + " " + responseInfo.identity.lastName;
+            birthDate = responseInfo.identity.dateOfBirth;
         }
     }
 }

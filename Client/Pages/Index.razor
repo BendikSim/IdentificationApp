@@ -1,14 +1,18 @@
 ﻿@page "/"
 
-<h1>Hello, world!</h1>
+<h1>Hello</h1>
 
-Welcome to your new app.
-
-<button class="btn btn-primary" @onclick="@Authentication">Test Authentication</button>
+<p>Welcome IdentificationApp</p>
 
 <button class="btn btn-primary" @onclick="@Start">Start API</button>
+
+<button class="btn btn-primary" @onclick="@getRequest">get</button>
+<p>Identification data</p>
+<p>@name</p>
+<p>@birthDate</p>
 
 
 @using System.Net.Http
 @inject HttpClient client
 @inject NavigationManager NavManager
+@inject IJSRuntime JSRuntime;
