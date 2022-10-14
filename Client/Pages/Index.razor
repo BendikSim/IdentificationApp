@@ -8,13 +8,13 @@
 
 <button class="btn btn-primary" @onclick="@Start">Start API</button>
 
-<button class="btn btn-primary" @onclick="@getRequest">Get Session</button>
+<button class="btn btn-primary" @onclick="@GetRequest">Get Session</button>
 
-@if (name != null)
+@if (_name != null)
 {
     <p>Identification data:</p>
-    <p>Name: @name</p>
-    <p>BirthDate: @birthDate</p>
+    <p>Name: @_name</p>
+    <p>BirthDate: @_birthDate</p>
 }
 
 
